@@ -21,9 +21,14 @@ const getPosts = (req, resp, next) => {
 const createPost = (req, resp, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
+    const err = new Error("Invalid data format");
+    err.statusCode = 422;
+    throw err;
+    /*
     return resp
       .status(422)
       .json({ message: "Invalid data format", errors: errors.array() });
+	*/
   }
 
   const { title, content } = req.body;
@@ -42,7 +47,10 @@ const createPost = (req, resp, next) => {
         post: result,
       });
     })
-    .catch((e) => console.log(e));
+    .catch((err) => {
+      if (!err.statusCode) err.statusCode = 500;
+      next(err);
+    });
 };
 
 module.exports = { getPosts, createPost };
