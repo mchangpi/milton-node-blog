@@ -19,7 +19,13 @@ const createPost = (req, resp, next) => {
   const { title, content } = req.body;
   resp.status(201).json({
     message: "Post created!",
-    post: { id: new Date().toISOString(), title, content },
+    post: {
+      _id: new Date().toISOString(),
+      title,
+      content,
+      creator: { name: "Milton" },
+      createdAt: new Date(),
+    },
   });
 };
 
