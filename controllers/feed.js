@@ -1,8 +1,16 @@
 const getPosts = (req, resp, next) => {
   resp.status(200).json({
     posts: [
-      { title: "1st post", content: "content 1" },
-      { title: "2nd post", content: "content 2" },
+      {
+        _id: 1,
+        title: "1st post",
+        content: "content 1",
+        imageUrl: "images/book.jpg",
+        creator: {
+          name: "Milton",
+        },
+        createdAt: new Date(),
+      },
     ],
   });
 };

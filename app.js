@@ -8,12 +8,12 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
 app.use((req, resp, next) => {
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader(
+  resp.setHeader("Access-Control-Allow-Origin", "*");
+  resp.setHeader(
     "Access-Control-Allow-Methods",
     "OPTIONS, GET, POST, PUT, PATCH, DELETE"
   );
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  resp.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
   next();
 });
 
