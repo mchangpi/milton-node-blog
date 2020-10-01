@@ -35,18 +35,22 @@ const createPost = (req, resp, next) => {
     const err = new Error("Invalid data format");
     err.statusCode = 422;
     throw err;
-    /*
-    return resp
-      .status(422)
-      .json({ message: "Invalid data format", errors: errors.array() });
-	*/
   }
+
+  if (!req.file) {
+    const error = new Error("No image provided.");
+    error.statusCode = 422;
+    throw error;
+  }
+
+  const imageUrl = req.file.path;
+  console.log("req file ", req.file);
 
   const { title, content } = req.body;
   const post = new Post({
     title,
     content,
-    imageUrl: "images/book.jpg",
+    imageUrl,
     creator: { name: "Milton" },
   });
   post
