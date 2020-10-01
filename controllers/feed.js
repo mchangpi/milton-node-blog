@@ -1,3 +1,5 @@
+const { validationResult } = require("express-validator");
+
 const getPosts = (req, resp, next) => {
   resp.status(200).json({
     posts: [
@@ -16,6 +18,13 @@ const getPosts = (req, resp, next) => {
 };
 
 const createPost = (req, resp, next) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return resp
+      .status(422)
+      .json({ message: "Invalid data format", errors: errors.array() });
+  }
+
   const { title, content } = req.body;
   resp.status(201).json({
     message: "Post created!",
