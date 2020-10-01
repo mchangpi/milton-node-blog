@@ -2,20 +2,31 @@ const { validationResult } = require("express-validator");
 const Post = require("../models/post");
 
 const getPosts = (req, resp, next) => {
-  resp.status(200).json({
-    posts: [
-      {
-        _id: 1,
-        title: "1st post",
-        content: "content 1",
-        imageUrl: "images/book.jpg",
-        creator: {
-          name: "Milton",
-        },
-        createdAt: new Date(),
-      },
-    ],
-  });
+  Post.find()
+    .then((posts) => {
+      resp.status(200).json({ message: "Fetched posts successfully", posts });
+    })
+    .catch((err) => {
+      if (!err.statusCode) err.statusCode = 500;
+      next(err);
+    });
+};
+
+const getPost = (req, resp, next) => {
+  const { postId } = req.params;
+  Post.findById(postId)
+    .then((post) => {
+      if (!post) {
+        const err = new Error("Could not find post");
+        err.statusCode = 404;
+        throw err; // to catch below
+      }
+      resp.status(200).json({ message: "Post fetched.", post });
+    })
+    .catch((err) => {
+      if (!err.statusCode) err.statusCode = 500;
+      next(err);
+    });
 };
 
 const createPost = (req, resp, next) => {
@@ -53,4 +64,4 @@ const createPost = (req, resp, next) => {
     });
 };
 
-module.exports = { getPosts, createPost };
+module.exports = { getPosts, getPost, createPost };
