@@ -156,8 +156,15 @@ const deletePost = (req, resp, next) => {
       clearImage(post.imageUrl);
       return Post.findByIdAndRemove(postId);
     })
-    .then((result) => {
-      console.log("result ", result);
+    .then((afterRemovePost) => {
+      console.log("result ", afterRemovePost);
+      return User.findById(req.userId);
+    })
+    .then((user) => {
+      user.posts.pull(postId);
+      return user.save();
+    })
+    .then((afterUserSave) => {
       resp.status(200).json({ message: "Delete Post" });
     })
     .catch((e) => {
