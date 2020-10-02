@@ -9,7 +9,7 @@ import Loader from "../../components/Loader/Loader";
 import ErrorHandler from "../../components/ErrorHandler/ErrorHandler";
 import "./Feed.css";
 
-const FEEDPOSTS_URL = process.env.REACT_APP_FEEDPOST + "s";
+const FEEDPOSTS_URL = process.env.REACT_APP_SERVER + "/feed/posts";
 
 class Feed extends Component {
   state = {
@@ -120,7 +120,7 @@ class Feed extends Component {
     formData.append("content", postData.content);
     formData.append("image", postData.image);
 
-    let url = process.env.REACT_APP_FEEDPOST;
+    let url = process.env.REACT_APP_SERVER + "/feed/post";
     let method = "POST";
     if (this.state.editPost) {
       url += "/" + this.state.editPost._id;
@@ -180,7 +180,7 @@ class Feed extends Component {
 
   deletePostHandler = (postId) => {
     this.setState({ postsLoading: true });
-    fetch(process.env.REACT_APP_FEEDPOST + "/" + postId, {
+    fetch(process.env.REACT_APP_SERVER + "/feed/post/" + postId, {
       method: "DELETE",
     })
       .then((res) => {

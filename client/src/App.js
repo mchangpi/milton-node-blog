@@ -13,13 +13,13 @@ import LoginPage from "./pages/Auth/Login";
 import SignupPage from "./pages/Auth/Signup";
 import "./App.css";
 
-const FEEDPOSTS_URL = process.env.REACT_APP_FEEDPOST + "s";
+const SIGNUP_URL = process.env.REACT_APP_SERVER + "/auth/signup";
 
 class App extends Component {
   state = {
     showBackdrop: false,
     showMobileNav: false,
-    isAuth: true,
+    isAuth: false,
     token: null,
     userId: null,
     authLoading: false,
@@ -61,7 +61,7 @@ class App extends Component {
   loginHandler = (event, authData) => {
     event.preventDefault();
     this.setState({ authLoading: true });
-    fetch(FEEDPOSTS_URL)
+    fetch(SIGNUP_URL)
       .then((res) => {
         if (res.status === 422) {
           throw new Error("Validation failed.");
@@ -102,7 +102,17 @@ class App extends Component {
   signupHandler = (event, authData) => {
     event.preventDefault();
     this.setState({ authLoading: true });
-    fetch(FEEDPOSTS_URL)
+    fetch(SIGNUP_URL, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        email: authData.signupForm.email.value,
+        password: authData.signupForm.password.value,
+        name: authData.signupForm.name.value,
+      }),
+    })
       .then((res) => {
         if (res.status === 422) {
           throw new Error(
@@ -110,7 +120,7 @@ class App extends Component {
           );
         }
         if (res.status !== 200 && res.status !== 201) {
-          console.log("Error!");
+          console.log("Error!", res.status);
           throw new Error("Creating a user failed!");
         }
         return res.json();
