@@ -22,6 +22,7 @@ const checkSignup = [
   body("name").trim().not().isEmpty(),
 ];
 
-router.put("/signup", checkSignup, authController.signup);
+router.put("/signup", checkSignup, authController.putSignup);
+router.post("/login", authController.postLogin);
 
 module.exports = router;

@@ -1,8 +1,9 @@
 const User = require("../models/user");
 const { validationResult } = require("express-validator");
 const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
 
-const signup = (req, resp, next) => {
+const putSignup = (req, resp, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     const err = new Error("Validation Failed");
@@ -31,4 +32,39 @@ const signup = (req, resp, next) => {
     });
 };
 
-module.exports = { signup };
+const postLogin = (req, resp, next) => {
+  const { email, password } = req.body;
+  let loadedUser;
+  User.findOne({ email })
+    .then((user) => {
+      if (!user) {
+        const err = new Error("User not found");
+        err.statusCode = 401;
+        throw err;
+      }
+      loadedUser = user;
+      return bcrypt.compare(password, user.password);
+    })
+    .then((isEqual) => {
+      if (!isEqual) {
+        const err = new Error("Wrong password");
+        err.statusCode = 401;
+        throw err;
+      }
+      const token = jwt.sign(
+        {
+          email: loadedUser.email,
+          userId: loadedUser._id.toString(),
+        },
+        "setPrivateKey",
+        { expiresIn: "1h" }
+      );
+      resp.status(200).json({ token, userId: loadedUser._id.toString() });
+    })
+    .catch((err) => {
+      if (!err.statusCode) err.statusCode = 500;
+      next(err);
+    });
+};
+
+module.exports = { putSignup, postLogin };
