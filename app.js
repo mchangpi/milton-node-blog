@@ -56,7 +56,10 @@ app.use((error, req, resp, next) => {
 });
 
 mongoose
-  .connect(process.env.MONGO_URL)
+  .connect(process.env.MONGO_URL, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  })
   .then((result) => {
     app.listen(8080, () => {
       console.log("Node listens on 8080..");
