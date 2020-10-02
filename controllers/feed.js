@@ -111,6 +111,11 @@ const updatePost = (req, resp, next) => {
         err.statusCode = 404;
         throw err; // throw to catch
       }
+      if (post.creator.toString() !== req.userId) {
+        const err = new Error("Not authorized");
+        err.statusCode = 403;
+        throw err;
+      }
       post.title = title;
       if (req.file) {
         clearImage(post.imageUrl);
@@ -142,6 +147,11 @@ const deletePost = (req, resp, next) => {
         const err = new Error("Not find post");
         err.statusCode = 404;
         throw err; // throw to catch
+      }
+      if (post.creator.toString() !== req.userId) {
+        const err = new Error("Not authorized");
+        err.statusCode = 403;
+        throw err;
       }
       clearImage(post.imageUrl);
       return Post.findByIdAndRemove(postId);
