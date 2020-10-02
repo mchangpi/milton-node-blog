@@ -2,12 +2,25 @@ const { validationResult } = require("express-validator");
 const Post = require("../models/post");
 const fs = require("fs");
 const path = require("path");
-const mongoose = require("mongoose");
 
 const getPosts = (req, resp, next) => {
+  const currentPage = req.query.page || 1;
+  const PER_PAGE = 2;
+  let totalItemsCount;
   Post.find()
+    .countDocuments()
+    .then((count) => {
+      totalItemsCount = count;
+      return Post.find()
+        .skip((currentPage - 1) * PER_PAGE)
+        .limit(PER_PAGE);
+    })
     .then((posts) => {
-      resp.status(200).json({ message: "Fetched posts successfully", posts });
+      resp.status(200).json({
+        message: "Fetched posts successfully",
+        posts,
+        totalItems: totalItemsCount,
+      });
     })
     .catch((err) => {
       if (!err.statusCode) err.statusCode = 500;
@@ -47,7 +60,7 @@ const createPost = (req, resp, next) => {
   }
 
   const imageUrl = req.file.path;
-  console.log("req file ", req.file);
+  //console.log("req file ", req.file);
 
   const { title, content } = req.body;
   const post = new Post({

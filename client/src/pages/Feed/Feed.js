@@ -9,7 +9,7 @@ import Loader from "../../components/Loader/Loader";
 import ErrorHandler from "../../components/ErrorHandler/ErrorHandler";
 import "./Feed.css";
 
-const URL = process.env.REACT_APP_FEEDPOST + "s";
+const FEEDPOSTS_URL = process.env.REACT_APP_FEEDPOST + "s";
 
 class Feed extends Component {
   state = {
@@ -24,8 +24,8 @@ class Feed extends Component {
   };
 
   componentDidMount() {
-    console.log("URL ", URL);
-    fetch(URL)
+    console.log("FEEDPOSTS_URL ", FEEDPOSTS_URL);
+    fetch(FEEDPOSTS_URL)
       .then((res) => {
         if (res.status !== 200) {
           throw new Error("Failed to fetch user status.");
@@ -53,7 +53,7 @@ class Feed extends Component {
       page--;
       this.setState({ postPage: page });
     }
-    fetch(URL)
+    fetch(FEEDPOSTS_URL + "?page=" + page)
       .then((res) => {
         if (res.status !== 200) {
           throw new Error("Failed to fetch posts.");
@@ -77,7 +77,7 @@ class Feed extends Component {
 
   statusUpdateHandler = (event) => {
     event.preventDefault();
-    fetch(URL)
+    fetch(FEEDPOSTS_URL)
       .then((res) => {
         if (res.status !== 200 && res.status !== 201) {
           throw new Error("Can't update status!");
