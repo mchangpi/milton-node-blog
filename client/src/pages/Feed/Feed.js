@@ -10,6 +10,7 @@ import ErrorHandler from "../../components/ErrorHandler/ErrorHandler";
 import "./Feed.css";
 
 const FEEDPOSTS_URL = process.env.REACT_APP_SERVER + "/feed/posts";
+const STATUS_URL = process.env.REACT_APP_SERVER + "/auth/status";
 
 class Feed extends Component {
   state = {
@@ -24,8 +25,8 @@ class Feed extends Component {
   };
 
   componentDidMount() {
-    console.log("FEEDPOSTS_URL ", FEEDPOSTS_URL);
-    fetch(FEEDPOSTS_URL, {
+    console.log("STATUS_URL ", STATUS_URL);
+    fetch(STATUS_URL, {
       headers: {
         Authorization: "Bearer " + this.props.token,
       },
@@ -85,10 +86,13 @@ class Feed extends Component {
 
   statusUpdateHandler = (event) => {
     event.preventDefault();
-    fetch(FEEDPOSTS_URL, {
+    fetch(STATUS_URL, {
+      method: "PATCH",
       headers: {
         Authorization: "Bearer " + this.props.token,
+        "Content-Type": "application/json",
       },
+      body: JSON.stringify({ status: this.state.status }),
     })
       .then((res) => {
         if (res.status !== 200 && res.status !== 201) {
@@ -140,10 +144,10 @@ class Feed extends Component {
     }
 
     fetch(url, {
+      method,
       headers: {
         Authorization: "Bearer " + this.props.token,
       },
-      method,
       body: formData,
     })
       .then((res) => {
@@ -196,10 +200,10 @@ class Feed extends Component {
   deletePostHandler = (postId) => {
     this.setState({ postsLoading: true });
     fetch(process.env.REACT_APP_SERVER + "/feed/post/" + postId, {
+      method: "DELETE",
       headers: {
         Authorization: "Bearer " + this.props.token,
       },
-      method: "DELETE",
     })
       .then((res) => {
         if (res.status !== 200 && res.status !== 201) {
