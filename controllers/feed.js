@@ -112,4 +112,25 @@ const clearImage = (filePath) => {
   fs.unlink(fullPath, (err) => console.log(err));
 };
 
-module.exports = { getPosts, getPost, createPost, updatePost };
+const deletePost = (req, resp, next) => {
+  const { postId } = req.params;
+  Post.findById(postId)
+    .then((post) => {
+      if (!post) {
+        const err = new Error("Not find post");
+        err.statusCode = 404;
+        throw err; // throw to catch
+      }
+      clearImage(post.imageUrl);
+      return Post.findByIdAndRemove(postId);
+    })
+    .then((result) => {
+      console.log("result ", result);
+      resp.status(200).json({ message: "Delete Post" });
+    })
+    .catch((e) => {
+      if (!e.statusCode) e.statusCode = 500;
+      next(e);
+    });
+};
+module.exports = { getPosts, getPost, createPost, updatePost, deletePost };
