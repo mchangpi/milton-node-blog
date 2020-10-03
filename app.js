@@ -1,10 +1,13 @@
 const path = require("path");
 const express = require("express");
-const feedRoutes = require("./routes/feed");
-const authRoutes = require("./routes/auth");
+//const feedRoutes = require("./routes/feed");
+//const authRoutes = require("./routes/auth");
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
 const multer = require("multer");
+const { graphqlHTTP } = require("express-graphql");
+const graphqlSchema = require("./graphql/schema");
+const graphqlResolver = require("./graphql/resolvers");
 
 require("dotenv").config();
 
@@ -48,8 +51,18 @@ app.use((req, resp, next) => {
   next();
 });
 
+app.use(
+  "/graphql",
+  graphqlHTTP({
+    schema: graphqlSchema,
+    rootValue: graphqlResolver,
+  })
+);
+
+/*
 app.use("/feed", feedRoutes);
 app.use("/auth", authRoutes);
+*/
 
 app.use((error, req, resp, next) => {
   console.log(error);
@@ -68,9 +81,11 @@ mongoose
     const server = app.listen(8080, () => {
       console.log("Node listens on 8080..");
     });
+    /*
     const io = require("./socket").initSocket(server);
     io.on("connection", (socket) => {
       console.log("Client connected");
-    });
+		});
+		*/
   })
   .catch((e) => console.log(e));
