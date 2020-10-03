@@ -3,6 +3,7 @@ const fs = require("fs");
 const path = require("path");
 const User = require("../models/user");
 const Post = require("../models/post");
+const io = require("../socket");
 
 const getPosts = async (req, resp, next) => {
   const currentPage = req.query.page || 1;
@@ -10,6 +11,7 @@ const getPosts = async (req, resp, next) => {
   try {
     const totalItemsCount = await Post.find().countDocuments();
     const posts = await Post.find()
+      .sort({ createdAt: -1 })
       .skip((currentPage - 1) * PER_PAGE)
       .limit(PER_PAGE);
     resp.status(200).json({
@@ -66,6 +68,9 @@ const createPost = async (req, resp, next) => {
     const user = await User.findById(req.userId);
     user.posts.push(post);
     await user.save();
+
+    io.getIO().emit("posts", { action: "create", post: post });
+
     resp.status(201).json({
       message: "Post created!",
       post,

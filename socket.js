@@ -10,4 +10,4 @@ const getIO = () => {
   return io;
 };
 
-module.exprots = { initSocket, getIO };
+module.exports = { initSocket, getIO };
