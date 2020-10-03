@@ -65,8 +65,12 @@ mongoose
     useUnifiedTopology: true,
   })
   .then((result) => {
-    app.listen(8080, () => {
+    const server = app.listen(8080, () => {
       console.log("Node listens on 8080..");
+    });
+    const io = require("socket.io")(server);
+    io.on("connection", (socket) => {
+      console.log("Client connected");
     });
   })
   .catch((e) => console.log(e));
