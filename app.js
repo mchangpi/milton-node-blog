@@ -68,7 +68,7 @@ mongoose
     const server = app.listen(8080, () => {
       console.log("Node listens on 8080..");
     });
-    const io = require("socket.io")(server);
+    const io = require("./socket").initSocket(server);
     io.on("connection", (socket) => {
       console.log("Client connected");
     });
