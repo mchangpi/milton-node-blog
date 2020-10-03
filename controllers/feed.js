@@ -11,6 +11,7 @@ const getPosts = async (req, resp, next) => {
   try {
     const totalItemsCount = await Post.find().countDocuments();
     const posts = await Post.find()
+      .populate("creator")
       .sort({ createdAt: -1 })
       .skip((currentPage - 1) * PER_PAGE)
       .limit(PER_PAGE);
@@ -69,7 +70,10 @@ const createPost = async (req, resp, next) => {
     user.posts.push(post);
     await user.save();
 
-    io.getIO().emit("posts", { action: "create", post: post });
+    io.getIO().emit("posts", {
+      action: "create",
+      post: { ...post._doc, creator: { _id: user._io, name: user.name } },
+    });
 
     resp.status(201).json({
       message: "Post created!",
