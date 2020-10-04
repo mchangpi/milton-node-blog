@@ -48,6 +48,9 @@ app.use((req, resp, next) => {
     "OPTIONS, GET, POST, PUT, PATCH, DELETE"
   );
   resp.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  if (req.method === "OPTIONS") {
+    return resp.sendStatus(200);
+  }
   next();
 });
 

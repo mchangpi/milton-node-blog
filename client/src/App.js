@@ -13,8 +13,8 @@ import LoginPage from "./pages/Auth/Login";
 import SignupPage from "./pages/Auth/Signup";
 import "./App.css";
 
-const SIGNUP_URL = process.env.REACT_APP_SERVER + "/auth/signup";
-const LOGIN_URL = process.env.REACT_APP_SERVER + "/auth/login";
+const SIGNUP_URL = process.env.REACT_APP_SERVER + "/graphql";
+const LOGIN_URL = SIGNUP_URL;
 
 class App extends Component {
   state = {
@@ -112,30 +112,39 @@ class App extends Component {
   signupHandler = (event, authData) => {
     event.preventDefault();
     this.setState({ authLoading: true });
+    const graphqlQuery = {
+      query: `
+			mutation{
+				createUser(userInput: {email: "${authData.signupForm.email.value}", 
+															 name: "${authData.signupForm.name.value}", 
+															 password:"${authData.signupForm.password.value}"})
+				{
+					_id
+					email
+				}
+			}
+			`,
+    };
     fetch(SIGNUP_URL, {
-      method: "PUT",
+      method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        email: authData.signupForm.email.value,
-        password: authData.signupForm.password.value,
-        name: authData.signupForm.name.value,
-      }),
+      body: JSON.stringify(graphqlQuery),
     })
       .then((res) => {
-        if (res.status === 422) {
-          throw new Error(
-            "Validation failed. Make sure the email address isn't used yet!"
-          );
-        }
-        if (res.status !== 200 && res.status !== 201) {
-          console.log("Error!", res.status);
-          throw new Error("Creating a user failed!");
-        }
         return res.json();
       })
       .then((resData) => {
+        if (resData.errors && resData.errors[0].status === 422) {
+          throw new Error(
+            resData.errors[0].message
+            //"Validation failed. Make sure the email address isn't used yet!"
+          );
+        }
+        if (resData.errors) {
+          throw new Error("User creation failed");
+        }
         console.log(resData);
         this.setState({ isAuth: false, authLoading: false });
         this.props.history.replace("/");
