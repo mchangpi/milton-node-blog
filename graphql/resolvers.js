@@ -7,20 +7,19 @@ module.exports = {
     // Use async / await in graphql
     const errors = [];
     if (!validator.isEmail(userInput.email)) {
-      errors.push({ message: "Email is invalid." });
+      errors.push({ msg: "Email is invalid." });
     }
     if (
       validator.isEmpty(userInput.password) ||
       !validator.isLength(userInput.password, { min: 5 })
     ) {
-      errors.push({ message: "Password too short." });
+      errors.push({ msg: "Password too short." });
     }
     if (errors.length > 0) {
-      let errMsg = "";
-      errors.forEach((err) => {
-        errMsg += err.message + " ";
-      });
-      throw new Error(errMsg);
+      const err = new Error("Invalid input format");
+      err.data = errors;
+      err.code = 422;
+      throw err;
     }
     const existingUser = await User.findOne({ email: userInput.email });
     if (existingUser) {
