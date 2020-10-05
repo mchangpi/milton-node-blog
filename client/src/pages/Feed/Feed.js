@@ -64,7 +64,7 @@ class Feed extends Component {
     const graphqlQuery = {
       query: `
 				query{
-					getPosts {
+					getPosts(page: ${page}) {
 						posts { _id title content creator {name} createdAt }
 						totalPosts
 					}
