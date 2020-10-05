@@ -59,6 +59,11 @@ module.exports = {
     return { token, userId: user._id.toString() };
   },
   createPost: async ({ postInput }, req) => {
+    if (!req.isAuth) {
+      const err = new Error("Not Authenticated.");
+      err.code = 401;
+      throw err;
+    }
     const errors = [];
     if (
       validator.isEmpty(postInput.title) ||
@@ -79,16 +84,22 @@ module.exports = {
       throw err;
     }
     const { title, content, imageUrl } = postInput;
-    /* */
-    const firstUser = await User.findOne();
-    //
+    const user = await User.findById(req.userId);
+    if (!user) {
+      const err = new Error("Invalid user.");
+      err.code = 401;
+      throw err;
+    }
     const post = new Post({
       title,
       content,
       imageUrl,
-      creator: req.userId ? req.userId : firstUser._id,
+      creator: user._id,
     });
     const mongoPost = await post.save();
+    user.posts.push(mongoPost);
+    await user.save();
+
     return {
       ...mongoPost._doc,
       _id: mongoPost._id.toString(),

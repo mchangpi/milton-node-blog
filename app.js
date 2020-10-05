@@ -8,6 +8,7 @@ const multer = require("multer");
 const { graphqlHTTP } = require("express-graphql");
 const graphqlSchema = require("./graphql/schema");
 const graphqlResolver = require("./graphql/resolvers");
+const isAuth = require("./middleware/graphql-auth");
 
 require("dotenv").config();
 
@@ -53,6 +54,8 @@ app.use((req, resp, next) => {
   }
   next();
 });
+
+app.use(isAuth);
 
 app.use(
   "/graphql",
