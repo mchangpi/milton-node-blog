@@ -153,4 +153,35 @@ module.exports = {
       updatedAt: post.updatedAt.toISOString(),
     };
   },
+  updatePost: async ({ id, postInput }, req) => {
+    if (!req.isAuth) {
+      const err = new Error("Not Authenticated.");
+      err.code = 401;
+      throw err;
+    }
+    const post = await Post.findById(id).populate("creator");
+    if (!post) {
+      const err = new Error("No Post found");
+      err.code = 404;
+      throw err;
+    }
+    if (post.creator._id.toString() !== req.userId.toString()) {
+      const err = new Error("Not authorized");
+      err.code = 403;
+      throw err;
+    }
+    post.title = postInput.title;
+    post.content = postInput.content;
+    if (postInput.imageUrl !== "undefined") {
+      post.imageUrl = postInput.imageUrl;
+    }
+    console.log("imageUrl ", postInput.imageUrl);
+    const updatedPost = await post.save();
+    return {
+      ...updatedPost._doc,
+      _id: updatedPost._id.toString(),
+      createdAt: updatedPost.createdAt.toISOString(),
+      updatedAt: updatedPost.updatedAt.toISOString(),
+    };
+  },
 };

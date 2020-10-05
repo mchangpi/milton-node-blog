@@ -164,22 +164,26 @@ class Feed extends Component {
           query: `
 					mutation{
 						createPost(postInput: {title:"${postData.title}",
-											 content:"${postData.content}",
-											 imageUrl:"${imageUrl}"}) {
-							_id 
-							title 
-							content 
-							imageUrl 
-							creator { name }
-							createdAt
+																	 content:"${postData.content}",
+																	 imageUrl:"${imageUrl}"}) {
+							_id title content imageUrl creator { name } createdAt
 						}
 					}`,
         };
-        let url = GRAPHQL_URL;
         if (this.state.editPost) {
-          url += "/" + this.state.editPost._id;
+          graphqlQuery = {
+            query: `
+						mutation{
+							updatePost(id: "${this.state.editPost._id}",
+												 postInput: {title:"${postData.title}",							
+												 						 content:"${postData.content}",
+												 						 imageUrl:"${imageUrl}"}) {
+								_id title content imageUrl creator { name } createdAt
+							}
+						}`,
+          };
         }
-        return fetch(url, {
+        return fetch(GRAPHQL_URL, {
           method: "POST",
           headers: {
             Authorization: "Bearer " + this.props.token,
@@ -191,22 +195,18 @@ class Feed extends Component {
       .then((res) => {
         return res.json();
       })
-      .then((resData) => {
-        if (resData.errors && resData.errors[0].status === 422) {
-          throw new Error(resData.errors[0].message);
+      .then((res) => {
+        if (res.errors && res.errors[0].status === 422) {
+          throw new Error(res.errors[0].message);
         }
-        if (resData.errors) {
-          throw new Error("Create post failed. " + resData.errors[0].message);
+        if (res.errors) {
+          throw new Error("Create post failed. " + res.errors[0].message);
         }
-        console.log("resData ", resData);
-        const {
-          _id,
-          title,
-          content,
-          creator,
-          createdAt,
-          imageUrl,
-        } = resData.data.createPost;
+        console.log("res ", res);
+        const { _id, title, content, creator, createdAt, imageUrl } = this.state
+          .editPost
+          ? res.data.updatePost
+          : res.data.createPost;
         const post = {
           _id,
           title,
@@ -268,8 +268,8 @@ class Feed extends Component {
         }
         return res.json();
       })
-      .then((resData) => {
-        console.log(resData);
+      .then((res) => {
+        console.log(res);
         /*
         this.setState((prevState) => {
           const updatedPosts = prevState.posts.filter((p) => p._id !== postId);
