@@ -25,8 +25,14 @@ module.exports = buildSchema(`
 		userId: String!
 	}
 
+	type PostsData {
+		posts: [Post!]!
+		totalPosts: Int!
+	}
+
 	type RootQuery {
 		login(email: String!, password: String!): AuthData!
+		getPosts: PostsData!
 	}
 
 	input UserInputData {

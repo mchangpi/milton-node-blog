@@ -46,52 +46,7 @@ class Feed extends Component {
       .catch(this.catchError);
 
     this.loadPosts();
-
-    /*
-    const socket = openSocket(process.env.REACT_APP_SERVER);
-    socket.on("posts", (data) => {
-      if (data.action === "create") {
-        this.addPost(data.post);
-      } else if (data.action === "update") {
-        this.updatePost(data.post);
-      } else if (data.action === "delete") {
-        this.loadPosts();
-      }
-		});
-		*/
   }
-
-  /*
-  addPost = (post) => {
-    this.setState((prevState) => {
-      const updatedPosts = [...prevState.posts];
-      if (prevState.postPage === 1) {
-        if (prevState.posts.length >= 2) {
-          updatedPosts.pop();
-        }
-        updatedPosts.unshift(post);
-      }
-      return {
-        posts: updatedPosts,
-        totalPosts: prevState.totalPosts + 1,
-      };
-    });
-  };
-  updatePost = (post) => {
-    this.setState((prevState) => {
-      const updatedPosts = [...prevState.posts];
-      const updatedPostIndex = updatedPosts.findIndex(
-        (p) => p._id === post._id
-      );
-      if (updatedPostIndex > -1) {
-        updatedPosts[updatedPostIndex] = post;
-      }
-      return {
-        posts: updatedPosts,
-      };
-    });
-  };
-	*/
 
   loadPosts = (direction) => {
     if (direction) {
@@ -106,26 +61,39 @@ class Feed extends Component {
       page--;
       this.setState({ postPage: page });
     }
-    fetch(GRAPHQL_URL + "?page=" + page, {
+    const graphqlQuery = {
+      query: `
+				query{
+					getPosts {
+						posts { _id title content creator {name} createdAt }
+						totalPosts
+					}
+				}
+			`,
+    };
+    fetch(GRAPHQL_URL, {
+      method: "POST",
       headers: {
         Authorization: "Bearer " + this.props.token,
+        "Content-Type": "application/json",
       },
+      body: JSON.stringify(graphqlQuery),
     })
       .then((res) => {
-        if (res.status !== 200) {
-          throw new Error("Failed to fetch posts.");
-        }
         return res.json();
       })
       .then((resData) => {
+        if (resData.errors) {
+          throw new Error("Get posts failed. " + resData.errors[0].message);
+        }
         this.setState({
-          posts: resData.posts.map((post) => {
+          posts: resData.data.getPosts.posts.map((post) => {
             return {
               ...post,
               imagePath: post.imageUrl,
             };
           }),
-          totalPosts: resData.totalItems,
+          totalPosts: resData.data.getPosts.totalPosts,
           postsLoading: false,
         });
       })
@@ -231,21 +199,26 @@ class Feed extends Component {
           createdAt,
         };
         this.setState((prevState) => {
-          /* Use socket.io instead
           let updatedPosts = [...prevState.posts];
+          let updatedTotalPosts = prevState.totalPosts;
           if (prevState.editPost) {
             const postIndex = prevState.posts.findIndex(
               (p) => p._id === prevState.editPost._id
             );
             updatedPosts[postIndex] = post;
-          } else if (prevState.posts.length < 2) {
-            updatedPosts = prevState.posts.concat(post);
-          }*/
+          } else {
+            updatedTotalPosts++;
+            if (prevState.posts.length >= 2) {
+              updatedPosts.pop();
+            }
+            updatedPosts.unshift(post);
+          }
           return {
-            // posts: updatedPosts,
+            posts: updatedPosts,
             isEditing: false,
             editPost: null,
             editLoading: false,
+            totalPosts: updatedTotalPosts,
           };
         });
       })

@@ -11,16 +11,16 @@ module.exports = {
     // Use async / await in graphql
     const errors = [];
     if (!validator.isEmail(userInput.email)) {
-      errors.push({ msg: "Email is invalid." });
+      errors.push({ message: "Email is invalid." });
     }
     if (
       validator.isEmpty(userInput.password) ||
       !validator.isLength(userInput.password, { min: 5 })
     ) {
-      errors.push({ msg: "Password too short." });
+      errors.push({ message: "Password too short." });
     }
     if (errors.length > 0) {
-      const err = new Error("Invalid input format. " + errors[0].msg);
+      const err = new Error("Invalid input format. " + errors[0].message);
       err.data = errors;
       err.code = 422;
       throw err;
@@ -69,16 +69,16 @@ module.exports = {
       validator.isEmpty(postInput.title) ||
       !validator.isLength(postInput.title, { min: 5 })
     ) {
-      errors.push({ msg: "Title should have at least 5 characters" });
+      errors.push({ message: "Title should have at least 5 characters" });
     }
     if (
       validator.isEmpty(postInput.content) ||
       !validator.isLength(postInput.content, { min: 5 })
     ) {
-      errors.push({ msg: "Content should have at least 5 characters" });
+      errors.push({ message: "Content should have at least 5 characters" });
     }
     if (errors.length > 0) {
-      const err = new Error("Invalid input format. " + errors[0].msg);
+      const err = new Error("Invalid input format. " + errors[0].message);
       err.data = errors;
       err.code = 422;
       throw err;
@@ -105,6 +105,26 @@ module.exports = {
       _id: mongoPost._id.toString(),
       createdAt: mongoPost.createdAt.toISOString(),
       updatedAt: mongoPost.createdAt.toISOString(),
+    };
+  },
+  getPosts: async (arg, req) => {
+    if (!req.isAuth) {
+      const err = new Error("Not Authenticated.");
+      err.code = 401;
+      throw err;
+    }
+    const totalPosts = await Post.find().countDocuments();
+    const posts = await Post.find().sort({ createdAt: -1 }).populate("creator");
+    return {
+      posts: posts.map((p) => {
+        return {
+          ...p._doc,
+          _id: p._id.toString(),
+          createdAt: p.createdAt.toISOString(),
+          updatedAt: p.createdAt.toISOString(),
+        };
+      }),
+      totalPosts,
     };
   },
 };
