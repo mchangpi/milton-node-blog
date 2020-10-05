@@ -10,8 +10,10 @@ import Loader from "../../components/Loader/Loader";
 import ErrorHandler from "../../components/ErrorHandler/ErrorHandler";
 import "./Feed.css";
 
-const FEEDPOSTS_URL = process.env.REACT_APP_SERVER + "/feed/posts";
-const STATUS_URL = process.env.REACT_APP_SERVER + "/auth/status";
+//const FEEDPOSTS_URL = process.env.REACT_APP_SERVER + "/graphql";
+//const STATUS_URL = FEEDPOSTS_URL;
+
+const GRAPHQL_URL = process.env.REACT_APP_SERVER + "/graphql";
 
 class Feed extends Component {
   state = {
@@ -26,8 +28,8 @@ class Feed extends Component {
   };
 
   componentDidMount() {
-    console.log("STATUS_URL ", STATUS_URL);
-    fetch(STATUS_URL, {
+    //console.log("STATUS_URL ", STATUS_URL);
+    fetch(GRAPHQL_URL, {
       headers: {
         Authorization: "Bearer " + this.props.token,
       },
@@ -104,7 +106,7 @@ class Feed extends Component {
       page--;
       this.setState({ postPage: page });
     }
-    fetch(FEEDPOSTS_URL + "?page=" + page, {
+    fetch(GRAPHQL_URL + "?page=" + page, {
       headers: {
         Authorization: "Bearer " + this.props.token,
       },
@@ -132,7 +134,7 @@ class Feed extends Component {
 
   statusUpdateHandler = (event) => {
     event.preventDefault();
-    fetch(STATUS_URL, {
+    fetch(GRAPHQL_URL, {
       method: "PATCH",
       headers: {
         Authorization: "Bearer " + this.props.token,
@@ -175,40 +177,58 @@ class Feed extends Component {
     this.setState({
       editLoading: true,
     });
-    // Set up data (with image!)
-    console.log("postData ", postData);
-    const formData = new FormData();
-    formData.append("title", postData.title);
-    formData.append("content", postData.content);
-    formData.append("image", postData.image);
+    let graphqlQuery = {
+      query: `
+			mutation{
+				createPost(postInput: {title:"${postData.title}",
+									 content:"${postData.content}",
+									 imageUrl:"Replace by Upload image"}) {
+					_id 
+					title 
+					content 
+					imageUrl 
+					creator { name }
+					createdAt
+				}
+			}`,
+    };
 
-    let url = process.env.REACT_APP_SERVER + "/feed/post";
-    let method = "POST";
+    let url = GRAPHQL_URL;
     if (this.state.editPost) {
       url += "/" + this.state.editPost._id;
-      method = "PUT";
     }
-
     fetch(url, {
-      method,
+      method: "POST",
       headers: {
         Authorization: "Bearer " + this.props.token,
+        "Content-Type": "application/json",
       },
-      body: formData,
+      body: JSON.stringify(graphqlQuery),
     })
       .then((res) => {
-        if (res.status !== 200 && res.status !== 201) {
-          throw new Error("Creating or editing a post failed!");
-        }
         return res.json();
       })
       .then((resData) => {
+        if (resData.errors && resData.errors[0].status === 422) {
+          throw new Error(resData.errors[0].message);
+        }
+        if (resData.errors) {
+          throw new Error("Create post failed. " + resData.errors[0].message);
+        }
+        console.log("resData ", resData);
+        const {
+          _id,
+          title,
+          content,
+          creator,
+          createdAt,
+        } = resData.data.createPost;
         const post = {
-          _id: resData.post._id,
-          title: resData.post.title,
-          content: resData.post.content,
-          creator: resData.post.creator,
-          createdAt: resData.post.createdAt,
+          _id,
+          title,
+          content,
+          creator,
+          createdAt,
         };
         this.setState((prevState) => {
           /* Use socket.io instead
@@ -246,7 +266,7 @@ class Feed extends Component {
 
   deletePostHandler = (postId) => {
     this.setState({ postsLoading: true });
-    fetch(process.env.REACT_APP_SERVER + "/feed/post/" + postId, {
+    fetch(GRAPHQL_URL + "/" + postId, {
       method: "DELETE",
       headers: {
         Authorization: "Bearer " + this.props.token,

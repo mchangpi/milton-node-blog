@@ -94,7 +94,7 @@ module.exports = {
       title,
       content,
       imageUrl,
-      creator: user._id,
+      creator: user,
     });
     const mongoPost = await post.save();
     user.posts.push(mongoPost);
