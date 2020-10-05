@@ -118,7 +118,9 @@ mongoose
   .catch((e) => console.log(e));
 
 const clearImage = (filePath) => {
-  const fullPath = path.join(__dirname, "..", filePath);
+  const fullPath = path.join(__dirname, filePath);
   console.log("remove old image " + fullPath);
-  fs.unlink(fullPath, (err) => console.log(err));
+  fs.unlink(fullPath, (err) => {
+    if (err) console.log(err);
+  });
 };

@@ -65,7 +65,7 @@ class Feed extends Component {
       query: `
 				query{
 					getPosts(page: ${page}) {
-						posts { _id title content creator {name} createdAt }
+						posts { _id title content imageUrl creator {name} createdAt }
 						totalPosts
 					}
 				}
