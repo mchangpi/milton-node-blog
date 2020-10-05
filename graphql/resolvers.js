@@ -43,15 +43,15 @@ module.exports = {
       err.code = 401;
       throw err;
     }
-    const isEqual = bcrypt.compare(password, user.password);
+    const isEqual = await bcrypt.compare(password, user.password);
     if (!isEqual) {
       const err = new Error("Wrong Password.");
       err.code = 401;
       throw err;
     }
-    const token = jwt.sign(
+    const token = await jwt.sign(
       { userId: user._id.toString(), email: user.email },
-      procress.env.SESSION_SECRET,
+      process.env.SESSION_SECRET,
       { expiresIn: "1h" }
     );
     return { token, userId: user._id.toString() };
