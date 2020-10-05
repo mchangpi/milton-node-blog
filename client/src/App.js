@@ -64,13 +64,14 @@ class App extends Component {
     this.setState({ authLoading: true });
     const graphqlQuery = {
       query: `
-				query{
-					login(email: "${authData.email}", password: "${authData.password}"){
+				query Login($email: String!, $pw: String!){
+					login(email: $email, password: $pw){
 						token
 						userId
 					}
 				}
 			`,
+      variables: { email: authData.email, pw: authData.password },
     };
     //console.log("query ", graphqlQuery);
     fetch(LOGIN_URL, {
@@ -123,16 +124,21 @@ class App extends Component {
     this.setState({ authLoading: true });
     const graphqlQuery = {
       query: `
-			mutation{
-				createUser(userInput: {email: "${authData.signupForm.email.value}", 
-															 name: "${authData.signupForm.name.value}", 
-															 password:"${authData.signupForm.password.value}"})
+			mutation CreateUser($email: String!, $name: String!,$pw: String!){
+				createUser(userInput: {email: $email, 
+															 name: $name, 
+															 password:$pw})
 				{
 					_id
 					email
 				}
 			}
 			`,
+      variables: {
+        email: authData.signupForm.email.value,
+        name: authData.signupForm.name.value,
+        pw: authData.signupForm.password.value,
+      },
     };
     fetch(SIGNUP_URL, {
       method: "POST",
