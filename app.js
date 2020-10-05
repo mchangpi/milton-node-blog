@@ -1,5 +1,4 @@
 const path = require("path");
-const fs = require("fs");
 const express = require("express");
 //const feedRoutes = require("./routes/feed");
 //const authRoutes = require("./routes/auth");
@@ -10,6 +9,7 @@ const { graphqlHTTP } = require("express-graphql");
 const graphqlSchema = require("./graphql/schema");
 const graphqlResolver = require("./graphql/resolvers");
 const isAuth = require("./middleware/graphql-auth");
+const clearImage = require("./util/file");
 
 require("dotenv").config();
 
@@ -116,11 +116,3 @@ mongoose
 		*/
   })
   .catch((e) => console.log(e));
-
-const clearImage = (filePath) => {
-  const fullPath = path.join(__dirname, filePath);
-  console.log("remove old image " + fullPath);
-  fs.unlink(fullPath, (err) => {
-    if (err) console.log(err);
-  });
-};

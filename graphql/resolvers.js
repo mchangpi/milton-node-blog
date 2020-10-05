@@ -3,6 +3,7 @@ const bcrypt = require("bcryptjs");
 const validator = require("validator");
 const jwt = require("jsonwebtoken");
 const Post = require("../models/post");
+const clearImage = require("../util/file");
 
 require("dotenv").config();
 
@@ -166,7 +167,7 @@ module.exports = {
       throw err;
     }
     if (post.creator._id.toString() !== req.userId.toString()) {
-      const err = new Error("Not authorized");
+      const err = new Error("Not Authorized");
       err.code = 403;
       throw err;
     }
@@ -183,5 +184,62 @@ module.exports = {
       createdAt: updatedPost.createdAt.toISOString(),
       updatedAt: updatedPost.updatedAt.toISOString(),
     };
+  },
+  deletePost: async ({ id }, req) => {
+    if (!req.isAuth) {
+      const err = new Error("Not Authenticated.");
+      err.code = 401;
+      throw err;
+    }
+    const post = await Post.findById(id);
+    if (!post) {
+      const err = new Error("No Post found");
+      err.code = 404;
+      throw err;
+    }
+    if (post.creator.toString() !== req.userId.toString()) {
+      const err = new Error("Not Authorized");
+      err.code = 403;
+      throw err;
+    }
+    clearImage(post.imageUrl);
+    await Post.findByIdAndRemove(id);
+    const user = await User.findById(req.userId);
+    user.posts.pull(id);
+    await user.save();
+    return true;
+  },
+  getUser: async (args, req) => {
+    if (!req.isAuth) {
+      const err = new Error("Not Authenticated.");
+      err.code = 401;
+      throw err;
+    }
+    const user = await User.findById(req.userId);
+    if (!user) {
+      const err = new Error("No User found");
+      err.code = 404;
+      throw err;
+    }
+    return {
+      ...user._doc,
+      _id: user._id.toString(),
+    };
+  },
+  updateStatus: async ({ status }, req) => {
+    if (!req.isAuth) {
+      const err = new Error("Not Authenticated.");
+      err.code = 401;
+      throw err;
+    }
+    const user = await User.findById(req.userId);
+    if (!user) {
+      const err = new Error("No User found");
+      err.code = 404;
+      throw err;
+    }
+    user.status = status;
+    await user.save();
+    return { ...user._doc, _id: user._id.toString() };
   },
 };

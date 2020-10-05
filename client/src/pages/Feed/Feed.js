@@ -28,20 +28,26 @@ class Feed extends Component {
   };
 
   componentDidMount() {
-    //console.log("STATUS_URL ", STATUS_URL);
+    const graphqlQuery = {
+      query: `query{
+					getUser{ status }
+				}`,
+    };
     fetch(GRAPHQL_URL, {
+      method: "POST",
       headers: {
         Authorization: "Bearer " + this.props.token,
+        "Content-Type": "application/json",
       },
+      body: JSON.stringify(graphqlQuery),
     })
       .then((res) => {
-        if (res.status !== 200) {
-          throw new Error("Failed to fetch user status.");
-        }
         return res.json();
       })
-      .then((resData) => {
-        this.setState({ status: resData.status });
+      .then((res) => {
+        if (res.errors)
+          throw new Error("Get status failed. " + res.errors[0].message);
+        this.setState({ status: res.data.getUser.status });
       })
       .catch(this.catchError);
 
@@ -102,22 +108,28 @@ class Feed extends Component {
 
   statusUpdateHandler = (event) => {
     event.preventDefault();
+    const graphqlQuery = {
+      query: `
+				mutation{						
+					updateStatus(status: "${this.state.status}"){ status }
+				}
+			`,
+    };
     fetch(GRAPHQL_URL, {
-      method: "PATCH",
+      method: "POST",
       headers: {
         Authorization: "Bearer " + this.props.token,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ status: this.state.status }),
+      body: JSON.stringify(graphqlQuery),
     })
       .then((res) => {
-        if (res.status !== 200 && res.status !== 201) {
-          throw new Error("Can't update status!");
-        }
         return res.json();
       })
-      .then((resData) => {
-        console.log(resData);
+      .then((res) => {
+        if (res.errors)
+          throw new Error("Update status failed. " + res.errors[0].message);
+        console.log("update status ", res);
       })
       .catch(this.catchError);
   };
@@ -256,20 +268,28 @@ class Feed extends Component {
 
   deletePostHandler = (postId) => {
     this.setState({ postsLoading: true });
-    fetch(GRAPHQL_URL + "/" + postId, {
-      method: "DELETE",
+    const graphqlQuery = {
+      query: `
+				mutation{
+					deletePost(id: "${postId}")
+				}
+			`,
+    };
+    fetch(GRAPHQL_URL, {
+      method: "POST",
       headers: {
         Authorization: "Bearer " + this.props.token,
+        "Content-Type": "application/json",
       },
+      body: JSON.stringify(graphqlQuery),
     })
       .then((res) => {
-        if (res.status !== 200 && res.status !== 201) {
-          throw new Error("Deleting a post failed!");
-        }
         return res.json();
       })
       .then((res) => {
-        console.log(res);
+        if (res.errors)
+          throw new Error("Delete post failed. " + res.errors[0].message);
+        this.loadPosts();
         /*
         this.setState((prevState) => {
           const updatedPosts = prevState.posts.filter((p) => p._id !== postId);
