@@ -1,4 +1,5 @@
 const path = require("path");
+const fs = require("fs");
 const express = require("express");
 //const feedRoutes = require("./routes/feed");
 //const authRoutes = require("./routes/auth");
@@ -57,6 +58,21 @@ app.use((req, resp, next) => {
 
 app.use(isAuth);
 
+app.put("/put-image", (req, resp, next) => {
+  if (!req.isAuth) {
+    throw new Error("Not authenticated");
+  }
+  if (!req.file) {
+    return resp.status(200).json({ message: "No file provided" });
+  }
+  if (req.body.oldPath) {
+    clearImage(req.body.oldPath);
+  }
+  return resp
+    .status(201)
+    .json({ message: "File Stored", filePath: req.file.path });
+});
+
 app.use(
   "/graphql",
   graphqlHTTP({
@@ -74,11 +90,6 @@ app.use(
     },
   })
 );
-
-/*
-app.use("/feed", feedRoutes);
-app.use("/auth", authRoutes);
-*/
 
 app.use((error, req, resp, next) => {
   console.log(error);
@@ -105,3 +116,9 @@ mongoose
 		*/
   })
   .catch((e) => console.log(e));
+
+const clearImage = (filePath) => {
+  const fullPath = path.join(__dirname, "..", filePath);
+  console.log("remove old image " + fullPath);
+  fs.unlink(fullPath, (err) => console.log(err));
+};

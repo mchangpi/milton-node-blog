@@ -145,34 +145,49 @@ class Feed extends Component {
     this.setState({
       editLoading: true,
     });
-    let graphqlQuery = {
-      query: `
-			mutation{
-				createPost(postInput: {title:"${postData.title}",
-									 content:"${postData.content}",
-									 imageUrl:"Replace by Upload image"}) {
-					_id 
-					title 
-					content 
-					imageUrl 
-					creator { name }
-					createdAt
-				}
-			}`,
-    };
-
-    let url = GRAPHQL_URL;
+    const formData = new FormData();
+    formData.append("image", postData.image);
     if (this.state.editPost) {
-      url += "/" + this.state.editPost._id;
+      formData.append("oldPath", this.state.editPost.imagePath);
     }
-    fetch(url, {
-      method: "POST",
+    fetch(process.env.REACT_APP_SERVER + "/put-image", {
+      method: "PUT",
       headers: {
         Authorization: "Bearer " + this.props.token,
-        "Content-Type": "application/json",
       },
-      body: JSON.stringify(graphqlQuery),
+      body: formData,
     })
+      .then((resp) => resp.json())
+      .then((fileData) => {
+        const imageUrl = fileData.filePath || "undefined";
+        let graphqlQuery = {
+          query: `
+					mutation{
+						createPost(postInput: {title:"${postData.title}",
+											 content:"${postData.content}",
+											 imageUrl:"${imageUrl}"}) {
+							_id 
+							title 
+							content 
+							imageUrl 
+							creator { name }
+							createdAt
+						}
+					}`,
+        };
+        let url = GRAPHQL_URL;
+        if (this.state.editPost) {
+          url += "/" + this.state.editPost._id;
+        }
+        return fetch(url, {
+          method: "POST",
+          headers: {
+            Authorization: "Bearer " + this.props.token,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(graphqlQuery),
+        });
+      })
       .then((res) => {
         return res.json();
       })
@@ -190,6 +205,7 @@ class Feed extends Component {
           content,
           creator,
           createdAt,
+          imageUrl,
         } = resData.data.createPost;
         const post = {
           _id,
@@ -197,6 +213,7 @@ class Feed extends Component {
           content,
           creator,
           createdAt,
+          imagePath: imageUrl,
         };
         this.setState((prevState) => {
           let updatedPosts = [...prevState.posts];
