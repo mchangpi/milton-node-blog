@@ -2,6 +2,8 @@ const User = require("../models/user");
 const bcrypt = require("bcryptjs");
 const validator = require("validator");
 const jwt = require("jsonwebtoken");
+const Post = require("../models/post");
+
 require("dotenv").config();
 
 module.exports = {
@@ -18,7 +20,7 @@ module.exports = {
       errors.push({ msg: "Password too short." });
     }
     if (errors.length > 0) {
-      const err = new Error("Invalid input format");
+      const err = new Error("Invalid input format. " + errors[0].msg);
       err.data = errors;
       err.code = 422;
       throw err;
@@ -55,5 +57,43 @@ module.exports = {
       { expiresIn: "1h" }
     );
     return { token, userId: user._id.toString() };
+  },
+  createPost: async ({ postInput }, req) => {
+    const errors = [];
+    if (
+      validator.isEmpty(postInput.title) ||
+      !validator.isLength(postInput.title, { min: 5 })
+    ) {
+      errors.push({ msg: "Title should have at least 5 characters" });
+    }
+    if (
+      validator.isEmpty(postInput.content) ||
+      !validator.isLength(postInput.content, { min: 5 })
+    ) {
+      errors.push({ msg: "Content should have at least 5 characters" });
+    }
+    if (errors.length > 0) {
+      const err = new Error("Invalid input format. " + errors[0].msg);
+      err.data = errors;
+      err.code = 422;
+      throw err;
+    }
+    const { title, content, imageUrl } = postInput;
+    /* */
+    const firstUser = await User.findOne();
+    //
+    const post = new Post({
+      title,
+      content,
+      imageUrl,
+      creator: req.userId ? req.userId : firstUser._id,
+    });
+    const mongoPost = await post.save();
+    return {
+      ...mongoPost._doc,
+      _id: mongoPost._id.toString(),
+      createdAt: mongoPost.createdAt.toISOString(),
+      updatedAt: mongoPost.createdAt.toISOString(),
+    };
   },
 };
