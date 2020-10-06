@@ -232,7 +232,7 @@ class Feed extends Component {
         if (res.errors) {
           throw new Error("Create post failed. " + res.errors[0].message);
         }
-        console.log("res ", res);
+        //console.log("res ", res);
         const { _id, title, content, creator, createdAt, imageUrl } = this.state
           .editPost
           ? res.data.updatePost

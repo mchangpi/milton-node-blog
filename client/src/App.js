@@ -93,7 +93,7 @@ class App extends Component {
         }
 
         const { login } = resData.data;
-        console.log("login result ", login);
+        //console.log("login result ", login);
         this.setState({
           isAuth: true,
           token: login.token,

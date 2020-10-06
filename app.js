@@ -10,6 +10,8 @@ const graphqlSchema = require("./graphql/schema");
 const graphqlResolver = require("./graphql/resolvers");
 const isAuth = require("./middleware/graphql-auth");
 const clearImage = require("./util/file");
+const helmet = require("helmet");
+const compression = require("compression");
 
 require("dotenv").config();
 
@@ -38,10 +40,11 @@ const fileFilter = (req, file, cb) => {
 
 //app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
-
 app.use(multer({ storage: fileStorage, fileFilter }).single("image"));
-
 app.use("/images", express.static(path.join(__dirname, "images")));
+app.use(express.static(path.join(__dirname, "client/build")));
+app.use(helmet());
+app.use(compression());
 
 app.use((req, resp, next) => {
   resp.setHeader("Access-Control-Allow-Origin", "*");

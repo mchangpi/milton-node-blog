@@ -37,7 +37,7 @@ class SinglePost extends Component {
       .then((res) => {
         if (res.errors)
           throw new Error("Fetching post failed. " + res.errors[0].message);
-        console.log("resp ", res);
+        //console.log("resp ", res);
         this.setState({
           title: res.data.getPost.title,
           author: res.data.getPost.creator.name,
