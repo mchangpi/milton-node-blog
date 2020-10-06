@@ -108,14 +108,13 @@ mongoose
     useUnifiedTopology: true,
   })
   .then((result) => {
-    const server = app.listen(8080, () => {
+    /*const server =*/
+    app.listen(process.env.PORT || 8080, () => {
       console.log("Node listens on 8080..");
     });
-    /*
-    const io = require("./socket").initSocket(server);
+    /* const io = require("./socket").initSocket(server);
     io.on("connection", (socket) => {
       console.log("Client connected");
-		});
-		*/
+		}); */
   })
   .catch((e) => console.log(e));
