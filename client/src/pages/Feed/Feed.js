@@ -260,6 +260,7 @@ class Feed extends Component {
             }
             updatedPosts.unshift(post);
           }
+          //console.log("add/edit total posts ", updatedTotalPosts);
           return {
             posts: updatedPosts,
             isEditing: false,
