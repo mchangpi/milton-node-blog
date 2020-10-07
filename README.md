@@ -4,7 +4,7 @@ The Blog is deployed to:
 https://milton-node-blog.herokuapp.com/  
 
 The Node.js backend is built by myself  
-The backend implementations includes:  
+The backend implementations include:  
 > Token-based Authentication  
 > Authorization (Only the author could edit/delete his post)  
 > GraphQL API  
