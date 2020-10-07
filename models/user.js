@@ -15,7 +15,7 @@ const userSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    default: "I am new",
+    default: "Hello, I am new user",
   },
   posts: [
     {

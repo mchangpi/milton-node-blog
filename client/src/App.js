@@ -108,6 +108,7 @@ class App extends Component {
         );
         localStorage.setItem("expiryDate", expiryDate.toISOString());
         this.setAutoLogout(remainingMilliseconds);
+        this.props.history.replace("/");
       })
       .catch((err) => {
         console.log(err);
@@ -158,11 +159,11 @@ class App extends Component {
           );
         }
         if (resData.errors) {
-          throw new Error("User creation failed");
+          throw new Error("User creation failed. " + resData.errors[0].message);
         }
         console.log(resData);
         this.setState({ isAuth: false, authLoading: false });
-        this.props.history.replace("/");
+        this.props.history.replace("/login");
       })
       .catch((err) => {
         console.log(err);
@@ -188,7 +189,7 @@ class App extends Component {
     let routes = (
       <Switch>
         <Route
-          path="/"
+          path="/login"
           exact
           render={(props) => (
             <LoginPage
@@ -199,7 +200,7 @@ class App extends Component {
           )}
         />
         <Route
-          path="/signup"
+          path="/"
           exact
           render={(props) => (
             <SignupPage
