@@ -1,7 +1,5 @@
 const path = require("path");
 const express = require("express");
-//const feedRoutes = require("./routes/feed");
-//const authRoutes = require("./routes/auth");
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
 const multer = require("multer");
@@ -9,39 +7,20 @@ const { graphqlHTTP } = require("express-graphql");
 const graphqlSchema = require("./graphql/schema");
 const graphqlResolver = require("./graphql/resolvers");
 const isAuth = require("./middleware/graphql-auth");
-const clearImage = require("./util/file");
 const helmet = require("helmet");
 const compression = require("compression");
+const { getRoutes } = require("./routes/image");
+const GridFsStorage = require("multer-gridfs-storage");
+const crypto = require("crypto");
 
 require("dotenv").config();
 
 const app = express();
 
-const fileStorage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, "images");
-  },
-  filename: (req, file, cb) => {
-    cb(null, new Date().toISOString() + "-" + file.originalname);
-  },
-});
-
-const fileFilter = (req, file, cb) => {
-  if (
-    file.mimetype === "image/png" ||
-    file.mimetype === "image/jpg" ||
-    file.mimetype === "image/jpeg"
-  ) {
-    cb(null, true);
-  } else {
-    cb(null, false);
-  }
-};
-
 //app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
-app.use(multer({ storage: fileStorage, fileFilter }).single("image"));
-app.use("/images", express.static(path.join(__dirname, "images")));
+//app.use(multer({ storage: fileStorage, fileFilter }).single("image"));
+//app.use("/images", express.static(path.join(__dirname, "images")));
 app.use(express.static(path.join(__dirname, "client/build")));
 app.use(helmet());
 app.use(compression());
@@ -60,7 +39,48 @@ app.use((req, resp, next) => {
 });
 
 app.use(isAuth);
+/*
+const fileStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "images");
+  },
+  filename: (req, file, cb) => {
+    cb(null, new Date().toISOString() + "-" + file.originalname);
+  },
+});*/
+const storage = new GridFsStorage({
+  url: process.env.MONGO_URL, //config.mongoURI,
+  file: (req, file) => {
+    return new Promise((resolve, reject) => {
+      crypto.randomBytes(16, (err, buf) => {
+        if (err) {
+          return reject(err);
+        }
+        const filename = buf.toString("hex") + "-" + file.originalname;
+        const fileInfo = {
+          filename: filename,
+          bucketName: "uploads",
+        };
+        resolve(fileInfo);
+      });
+    });
+  },
+});
+const fileFilter = (req, file, cb) => {
+  if (
+    file.mimetype === "image/png" ||
+    file.mimetype === "image/jpg" ||
+    file.mimetype === "image/jpeg"
+  ) {
+    cb(null, true);
+  } else {
+    cb(null, false);
+  }
+};
+const upload = multer({ storage, fileFilter });
+app.use("/image", getRoutes(upload));
 
+/*
 app.put("/put-image", (req, resp, next) => {
   if (!req.isAuth) {
     throw new Error("Not authenticated");
@@ -75,6 +95,7 @@ app.put("/put-image", (req, resp, next) => {
     .status(201)
     .json({ message: "File Stored", filePath: req.file.path });
 });
+*/
 
 app.use(
   "/graphql",
@@ -108,9 +129,9 @@ mongoose
     useUnifiedTopology: true,
   })
   .then((result) => {
-    /*const server =*/
-    app.listen(process.env.PORT || 8080, () => {
-      console.log("Node listens on 8080..");
+    const port = process.env.PORT || 8080;
+    app.listen(port, () => {
+      console.log("Node listens on ", port);
     });
     /* const io = require("./socket").initSocket(server);
     io.on("connection", (socket) => {

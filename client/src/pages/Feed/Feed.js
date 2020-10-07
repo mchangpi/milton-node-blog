@@ -159,12 +159,15 @@ class Feed extends Component {
     this.setState({
       editLoading: true,
     });
+
     const formData = new FormData();
     formData.append("image", postData.image);
     if (this.state.editPost) {
       formData.append("oldPath", this.state.editPost.imagePath);
     }
-    fetch(process.env.REACT_APP_SERVER + "/put-image", {
+    //console.log("formData ", formData);
+
+    fetch(process.env.REACT_APP_SERVER + "/image", {
       method: "PUT",
       headers: {
         Authorization: "Bearer " + this.props.token,
@@ -172,8 +175,9 @@ class Feed extends Component {
       body: formData,
     })
       .then((resp) => resp.json())
-      .then((fileData) => {
-        const imageUrl = fileData.filePath || "undefined";
+      .then((resp) => {
+        //console.log("img resp ", resp);
+        const imageUrl = resp.image ? resp.image.filename : "undefined";
         let graphqlQuery = {
           query: `
 					mutation CreatePost($title: String!, 

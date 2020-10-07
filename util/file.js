@@ -1,6 +1,6 @@
 const path = require("path");
 const fs = require("fs");
-const clearImage = (filePath) => {
+const clearImageNotForHeroku = (filePath) => {
   const fullPath = path.join(__dirname, "..", filePath);
   console.log("remove old image " + fullPath);
   fs.unlink(fullPath, (err) => {
@@ -8,4 +8,4 @@ const clearImage = (filePath) => {
   });
 };
 
-module.exports = clearImage;
+module.exports = clearImageNotForHeroku;

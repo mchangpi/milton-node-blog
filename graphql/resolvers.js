@@ -3,7 +3,7 @@ const bcrypt = require("bcryptjs");
 const validator = require("validator");
 const jwt = require("jsonwebtoken");
 const Post = require("../models/post");
-const clearImage = require("../util/file");
+const { clearImage } = require("../routes/image");
 
 require("dotenv").config();
 
@@ -176,7 +176,7 @@ module.exports = {
     if (postInput.imageUrl !== "undefined") {
       post.imageUrl = postInput.imageUrl;
     }
-    console.log("imageUrl ", postInput.imageUrl);
+    console.log("new image ", postInput.imageUrl);
     const updatedPost = await post.save();
     return {
       ...updatedPost._doc,

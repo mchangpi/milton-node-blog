@@ -37,11 +37,14 @@ class SinglePost extends Component {
       .then((res) => {
         if (res.errors)
           throw new Error("Fetching post failed. " + res.errors[0].message);
-        //console.log("resp ", res);
+        //console.log("res ", res);
         this.setState({
           title: res.data.getPost.title,
           author: res.data.getPost.creator.name,
-          image: process.env.REACT_APP_SERVER + "/" + res.data.getPost.imageUrl,
+          image:
+            process.env.REACT_APP_SERVER +
+            "/image/" +
+            res.data.getPost.imageUrl,
           date: new Date(res.data.getPost.createdAt).toLocaleDateString("zh"),
           content: res.data.getPost.content,
         });
