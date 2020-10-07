@@ -1,19 +1,29 @@
-import React from 'react';
-import { NavLink } from 'react-router-dom';
+import React from "react";
+import { NavLink } from "react-router-dom";
 
-import MobileToggle from '../MobileToggle/MobileToggle';
-import Logo from '../../Logo/Logo';
-import NavigationItems from '../NavigationItems/NavigationItems';
+import MobileToggle from "../MobileToggle/MobileToggle";
+import Logo from "../../Logo/Logo";
+import LinkedIn from "../../LinkedIn/LinkedIn";
+import NavigationItems from "../NavigationItems/NavigationItems";
 
-import './MainNavigation.css';
+import "./MainNavigation.css";
 
-const mainNavigation = props => (
+const mainNavigation = (props) => (
   <nav className="main-nav">
     <MobileToggle onOpen={props.onOpenMobileNav} />
     <div className="main-nav__logo">
       <NavLink to="/">
-        <Logo />
+        <Logo logoTitle="Node Blog" />
       </NavLink>
+    </div>
+    <div className="main-nav__logo">
+      <a
+        href="https://www.linkedin.com/in/milton-chang-pi/"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        <LinkedIn logoTitle="LinkedIn" />
+      </a>
     </div>
     <div className="spacer" />
     <ul className="main-nav__items">
