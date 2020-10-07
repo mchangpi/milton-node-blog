@@ -115,6 +115,10 @@ app.use(
   })
 );
 
+app.use((req, resp, next) => {
+  resp.status(200).json({ message: "We have handled all routes in server" });
+});
+
 app.use((error, req, resp, next) => {
   console.log(error);
   const status = error.statusCode || 500;
