@@ -1,4 +1,4 @@
-Hello, This is a Blog built with Node.js and React.js  
+Hello, This is a Blog built with Node.js and MongoDB  
 After signup and login, you could add a post with an image  
 The Blog is deployed to:  
 https://milton-node-blog.herokuapp.com/  
