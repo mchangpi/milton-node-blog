@@ -79,9 +79,7 @@ describe("Auth controller:", () => {
 
   after((done) => {
     User.deleteMany({})
-      .then(() => {
-        return mongoose.disconnect();
-      })
+      .then(() => mongoose.disconnect())
       .then(() => done());
   });
 });
